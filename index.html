@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Monkey Fitness</title>
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#0f0f0f">
+
+<style>
+
+body{
+background:#0f0f0f;
+color:white;
+font-family:Arial;
+text-align:center;
+margin:0;
+}
+
+header{
+padding:20px;
+font-size:24px;
+font-weight:bold;
+}
+
+.card{
+background:#1a1a1a;
+margin:20px;
+padding:20px;
+border-radius:14px;
+}
+
+input{
+width:80%;
+padding:10px;
+margin:5px;
+background:#111;
+color:white;
+border:none;
+border-radius:10px;
+}
+
+button{
+padding:12px 20px;
+margin-top:10px;
+background:#6b5cff;
+border:none;
+border-radius:10px;
+color:white;
+}
+
+#calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:5px;
+margin-top:10px;
+}
+
+.day{
+padding:10px;
+border-radius:6px;
+font-size:12px;
+}
+
+.green{background:#00c853;}
+.yellow{background:#ffd600;color:black;}
+.black{background:#333;}
+
+</style>
+
+</head>
+
+<body>
+
+<header>🐒 Monkey Fitness</header>
+
+<div class="card">
+
+<h3>Today's Fitness</h3>
+
+<input id="gym" type="number" placeholder="Gym Hours">
+
+<input id="jog" type="number" placeholder="Jog KM">
+
+<input id="meal" type="number" placeholder="Healthy Meals">
+
+<input id="water" type="number" placeholder="Water Glasses">
+
+<input id="weight" type="number" placeholder="Weight kg">
+
+<button onclick="saveData()">Save Today</button>
+
+</div>
+
+<div class="card">
+
+<h3>🔥 Streak</h3>
+
+<p id="streak">0 days</p>
+
+</div>
+
+<div class="card">
+
+<h3>📅 Consistency</h3>
+
+<div id="calendar"></div>
+
+</div>
+
+<div class="card">
+
+<h3>🏆 Achievements</h3>
+
+<ul id="badges"></ul>
+
+</div>
+
+<div class="card">
+
+<h3>❤️ Message From Moon</h3>
+
+<p>Monkey keep going. I'm proud of you.</p>
+
+</div>
+
+<script>
+
+function saveData(){
+
+let gym=Number(document.getElementById("gym").value)
+let jog=Number(document.getElementById("jog").value)
+let meal=Number(document.getElementById("meal").value)
+let water=Number(document.getElementById("water").value)
+let weight=Number(document.getElementById("weight").value)
+
+let today=new Date().toISOString().split("T")[0]
+
+let data=JSON.parse(localStorage.getItem("fitness"))||{}
+
+data[today]={gym,jog,meal,water,weight}
+
+localStorage.setItem("fitness",JSON.stringify(data))
+
+calculateStreak()
+renderCalendar()
+checkBadges()
+
+}
+
+function calculateStreak(){
+
+let data=JSON.parse(localStorage.getItem("fitness"))||{}
+
+let dates=Object.keys(data).sort().reverse()
+
+let streak=0
+
+for(let d of dates){
+
+if(data[d].gym>0 || data[d].jog>0){
+streak++
+}else{
+break
+}
+
+}
+
+document.getElementById("streak").innerText=streak+" days"
+
+}
+
+function renderCalendar(){
+
+let calendar=document.getElementById("calendar")
+
+calendar.innerHTML=""
+
+let data=JSON.parse(localStorage.getItem("fitness"))||{}
+
+for(let i=1;i<=30;i++){
+
+let date=new Date()
+date.setDate(i)
+
+let key=date.toISOString().split("T")[0]
+
+let div=document.createElement("div")
+div.classList.add("day")
+div.innerText=i
+
+if(data[key]){
+
+let score=data[key].gym+data[key].jog+data[key].meal
+
+if(score>=5){
+div.classList.add("green")
+}else{
+div.classList.add("yellow")
+}
+
+}else{
+
+div.classList.add("black")
+
+}
+
+calendar.appendChild(div)
+
+}
+
+}
+
+function checkBadges(){
+
+let badges=document.getElementById("badges")
+badges.innerHTML=""
+
+let data=JSON.parse(localStorage.getItem("fitness"))||{}
+let days=Object.keys(data).length
+
+if(days>=3)badges.innerHTML+="<li>🏅 3 Day Consistency</li>"
+if(days>=7)badges.innerHTML+="<li>🏅 7 Day Warrior</li>"
+if(days>=14)badges.innerHTML+="<li>🏅 Discipline Mode</li>"
+
+}
+
+calculateStreak()
+renderCalendar()
+checkBadges()
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js')
+}
+
+</script>
+
+</body>
+</html>
